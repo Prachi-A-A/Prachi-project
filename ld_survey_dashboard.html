@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shape Your Growth — Okta L&D Survey Insights</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --okta-blue: #003087;
+    --okta-light: #00297a;
+    --bg: #f4f6fa;
+    --card: #ffffff;
+    --text: #1a1a2e;
+    --sub: #555e77;
+    /* Agreement palette */
+    --s-agree:   #1b7340;
+    --agree:     #52b788;
+    --neutral:   #adb5bd;
+    --disagree:  #e07a5f;
+    --s-disagree:#b5182b;
+    /* Rating 1-5 */
+    --r1: #b5182b;
+    --r2: #e07a5f;
+    --r3: #f4d35e;
+    --r4: #52b788;
+    --r5: #1b7340;
+    /* AI Fluency */
+    --ai1: #f3e8ff;
+    --ai2: #c084fc;
+    --ai3: #9333ea;
+    --ai4: #6b21a8;
+    --ai5: #3b0764;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); }
+
+  header {
+    background: linear-gradient(135deg, #003087 0%, #0052cc 60%, #00a3e0 100%);
+    color: white; padding: 36px 40px 30px;
+  }
+  header h1 { font-size: 2rem; font-weight: 700; letter-spacing: -0.5px; }
+  header p  { margin-top: 6px; font-size: 1rem; opacity: 0.85; }
+  .badge { display: inline-block; background: rgba(255,255,255,0.2); border-radius: 20px;
+           padding: 4px 14px; font-size: 0.85rem; margin-top: 12px; }
+
+  .summary-row {
+    display: flex; gap: 20px; padding: 24px 40px;
+    flex-wrap: wrap;
+  }
+  .kpi {
+    background: var(--card); border-radius: 12px; padding: 20px 28px;
+    flex: 1; min-width: 160px; box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    border-top: 4px solid var(--okta-blue);
+  }
+  .kpi .num { font-size: 2.4rem; font-weight: 700; color: var(--okta-blue); }
+  .kpi .lbl { font-size: 0.82rem; color: var(--sub); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+  .section-title {
+    font-size: 1.05rem; font-weight: 700; color: var(--okta-blue);
+    padding: 0 40px 6px; margin-top: 8px; text-transform: uppercase;
+    letter-spacing: 1px; border-left: 4px solid var(--okta-blue);
+    margin-left: 40px; padding-left: 12px;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(480px, 1fr));
+    gap: 24px; padding: 16px 40px;
+  }
+  .grid.wide { grid-template-columns: 1fr; }
+  .grid.three { grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); }
+
+  .card {
+    background: var(--card); border-radius: 14px; padding: 24px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+  }
+  .card h3 { font-size: 0.95rem; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+  .card .q-num { font-size: 0.75rem; color: var(--sub); text-transform: uppercase;
+                 letter-spacing: 0.6px; margin-bottom: 10px; display: block; }
+  .chart-wrap { position: relative; }
+  .chart-wrap.sm  { height: 200px; }
+  .chart-wrap.md  { height: 260px; }
+  .chart-wrap.lg  { height: 320px; }
+  .chart-wrap.xl  { height: 380px; }
+
+  .insight {
+    margin-top: 14px; padding: 10px 14px; background: #f0f4ff;
+    border-radius: 8px; font-size: 0.82rem; color: var(--sub); line-height: 1.5;
+    border-left: 3px solid var(--okta-blue);
+  }
+  .insight strong { color: var(--text); }
+
+  footer { text-align: center; padding: 28px; color: var(--sub); font-size: 0.82rem; }
+
+  /* legend strip */
+  .legend-strip { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; font-size: 0.78rem; }
+  .legend-strip .dot { width: 11px; height: 11px; border-radius: 50%; display: inline-block; margin-right: 4px; flex-shrink:0; }
+  .legend-strip span { display: flex; align-items: center; color: var(--sub); }
+
+  /* ── Insights Section ── */
+  .insights-header {
+    margin: 32px 40px 0;
+    background: linear-gradient(135deg, #0a0a2e 0%, #003087 60%, #0052cc 100%);
+    border-radius: 16px;
+    padding: 32px 36px;
+    color: white;
+  }
+  .insights-header h2 { font-size: 1.5rem; font-weight: 700; }
+  .insights-header p { margin-top: 6px; font-size: 0.92rem; opacity: 0.8; max-width: 680px; line-height: 1.6; }
+
+  .insights-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 20px;
+    padding: 20px 40px;
+  }
+
+  .insight-card {
+    border-radius: 14px;
+    padding: 22px 24px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+    border-top: 5px solid;
+  }
+  .insight-card.green  { background: #f0faf4; border-color: #1b7340; }
+  .insight-card.red    { background: #fff5f5; border-color: #b5182b; }
+  .insight-card.amber  { background: #fffbee; border-color: #d4a017; }
+  .insight-card.blue   { background: #eef4ff; border-color: #003087; }
+  .insight-card.purple { background: #f8f0ff; border-color: #7e22ce; }
+  .insight-card.teal   { background: #f0fffe; border-color: #0d7377; }
+
+  .insight-card .ic-header {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 14px;
+  }
+  .insight-card .ic-icon {
+    width: 36px; height: 36px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem; flex-shrink: 0;
+  }
+  .green  .ic-icon { background: #d1fae5; }
+  .red    .ic-icon { background: #ffe4e4; }
+  .amber  .ic-icon { background: #fef3cd; }
+  .blue   .ic-icon { background: #dbeafe; }
+  .purple .ic-icon { background: #ede9fe; }
+  .teal   .ic-icon { background: #ccfbf1; }
+
+  .insight-card .ic-title {
+    font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.8px;
+  }
+  .green  .ic-title { color: #1b7340; }
+  .red    .ic-title { color: #b5182b; }
+  .amber  .ic-title { color: #92610a; }
+  .blue   .ic-title { color: #003087; }
+  .purple .ic-title { color: #7e22ce; }
+  .teal   .ic-title { color: #0d7377; }
+
+  .insight-card h3 { font-size: 1rem; font-weight: 700; color: #1a1a2e; margin-bottom: 12px; }
+
+  .insight-card ul { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+  .insight-card ul li {
+    display: flex; gap: 10px; align-items: flex-start;
+    font-size: 0.85rem; line-height: 1.55; color: #333;
+  }
+  .insight-card ul li .bullet {
+    width: 20px; height: 20px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.7rem; font-weight: 700; flex-shrink: 0; margin-top: 1px;
+  }
+  .green  ul li .bullet { background: #1b7340; color: white; }
+  .red    ul li .bullet { background: #b5182b; color: white; }
+  .amber  ul li .bullet { background: #d4a017; color: white; }
+  .blue   ul li .bullet { background: #003087; color: white; }
+  .purple ul li .bullet { background: #7e22ce; color: white; }
+  .teal   ul li .bullet { background: #0d7377; color: white; }
+
+  .insight-card .stat-pill {
+    display: inline-block; padding: 2px 10px; border-radius: 20px;
+    font-size: 0.75rem; font-weight: 700; margin-right: 4px;
+  }
+  .green  .stat-pill { background: #d1fae5; color: #1b7340; }
+  .red    .stat-pill { background: #ffe4e4; color: #b5182b; }
+  .amber  .stat-pill { background: #fef3cd; color: #92610a; }
+  .blue   .stat-pill { background: #dbeafe; color: #003087; }
+  .purple .stat-pill { background: #ede9fe; color: #7e22ce; }
+  .teal   .stat-pill { background: #ccfbf1; color: #0d7377; }
+
+  .divider { height: 1px; background: #e8ecf4; margin: 24px 40px; }
+
+  /* Spotlight bar */
+  .spotlight-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px; padding: 0 40px 24px;
+  }
+  .spotlight {
+    background: white; border-radius: 12px; padding: 18px 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .spotlight .snum { font-size: 2rem; font-weight: 800; }
+  .spotlight .slbl { font-size: 0.8rem; color: #555e77; line-height: 1.4; }
+  .spotlight .stag { font-size: 0.72rem; font-weight: 600; padding: 2px 8px; border-radius: 20px; width: fit-content; }
+
+  .tag-good   { background: #d1fae5; color: #1b7340; }
+  .tag-warn   { background: #fef3cd; color: #92610a; }
+  .tag-action { background: #dbeafe; color: #003087; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Shape Your Growth — Okta L&D Survey</h1>
+  <p>India Region · Learning &amp; Development Team · May 2026</p>
+  <span class="badge">94 Responses Analysed</span>
+</header>
+
+<!-- KPIs -->
+<div class="summary-row">
+  <div class="kpi"><div class="num">94</div><div class="lbl">Total Responses</div></div>
+  <div class="kpi"><div class="num">61%</div><div class="lbl">Participated in L&D (6 mo)</div></div>
+  <div class="kpi"><div class="num">80%</div><div class="lbl">Agree: L&D boosted growth</div></div>
+  <div class="kpi"><div class="num">75</div><div class="lbl">Votes: AI Fluency top need</div></div>
+  <div class="kpi"><div class="num">57%</div><div class="lbl">Know exactly / partially who POC is</div></div>
+  <div class="kpi"><div class="num">4.0</div><div class="lbl">Avg Platform Navigation score</div></div>
+</div>
+
+<!-- AWARENESS & ACCESS -->
+<div class="section-title">Awareness &amp; Access</div>
+<div class="grid three">
+
+  <!-- Q1: L&D Awareness -->
+  <div class="card">
+    <span class="q-num">Q1 · Awareness</span>
+    <h3>How aware are you of the L&D team?</h3>
+    <div class="chart-wrap md"><canvas id="q1"></canvas></div>
+    <div class="insight"><strong>Opportunity:</strong> 20 respondents (21%) rated awareness 1–2. Boosting visibility for new joiners is critical.</div>
+  </div>
+
+  <!-- Q2: POC Knowledge -->
+  <div class="card">
+    <span class="q-num">Q2 · POC Knowledge</span>
+    <h3>Do you know your L&D point of contact?</h3>
+    <div class="chart-wrap md"><canvas id="q2"></canvas></div>
+    <div class="insight"><strong>Gap:</strong> 35% don't know their POC. A simple "<em>Meet your L&D team</em>" onboarding email could close this fast.</div>
+  </div>
+
+  <!-- Q3: Info Sources -->
+  <div class="card">
+    <span class="q-num">Q3 · Discovery Channels</span>
+    <h3>Where do you look for L&D info?</h3>
+    <div class="chart-wrap md"><canvas id="q3"></canvas></div>
+    <div class="insight"><strong>Slack is #1 discovery channel</strong> (66 mentions). The Landing and Email follow. 7 people said they don't know where to look.</div>
+  </div>
+
+</div>
+
+<!-- COMMUNICATION & PLATFORMS -->
+<div class="section-title" style="margin-top:16px">Communication &amp; Platforms</div>
+<div class="grid">
+
+  <!-- Q4: Comms Rating -->
+  <div class="card">
+    <span class="q-num">Q4 · Communication Quality</span>
+    <h3>Clarity &amp; frequency of L&D communication (1–5)</h3>
+    <div class="chart-wrap sm"><canvas id="q4"></canvas></div>
+    <div class="insight"><strong>55% rated 4–5</strong>, but 21% rated 1–2 — suggesting a split audience where some are well-informed and others feel left out.</div>
+  </div>
+
+  <!-- Q5: Platform Navigation -->
+  <div class="card">
+    <span class="q-num">Q5 · Platform UX</span>
+    <h3>Ease of navigation on OktaU / Cornerstone / Udemy (1–5)</h3>
+    <div class="chart-wrap sm"><canvas id="q5"></canvas></div>
+    <div class="insight"><strong>70% rated 4–5</strong> — platforms are generally navigable. Focus effort on the 7% who rated 1–2.</div>
+  </div>
+
+</div>
+
+<!-- PARTICIPATION -->
+<div class="section-title" style="margin-top:16px">Participation</div>
+<div class="grid">
+
+  <!-- Q6: Participation -->
+  <div class="card">
+    <span class="q-num">Q6 · L&D Participation</span>
+    <h3>Participated in L&D programs in the last 6 months?</h3>
+    <div class="chart-wrap sm"><canvas id="q6"></canvas></div>
+    <div class="insight"><strong>61% participated</strong> in the last 6 months. 39% (37 people) did not — a significant engagement gap to address.</div>
+  </div>
+
+  <!-- Q7: Barriers -->
+  <div class="card">
+    <span class="q-num">Q7 · Barriers to Participation</span>
+    <h3>Why didn't non-participants join? <small style="font-weight:400;color:var(--sub)">(n=37 who said No)</small></h3>
+    <div class="chart-wrap md"><canvas id="q7"></canvas></div>
+    <div class="insight"><strong>"Unaware of offerings"</strong> edges out "lack of time" as the top barrier — a comms and discoverability fix, not a scheduling one.</div>
+  </div>
+
+</div>
+
+<!-- CONTENT RELEVANCE & NEEDS -->
+<div class="section-title" style="margin-top:16px">Content Relevance &amp; Learning Needs</div>
+<div class="grid">
+
+  <!-- Q8: Relevance -->
+  <div class="card">
+    <span class="q-num">Q8 · Content Relevance</span>
+    <h3>How relevant are current L&D offerings to your day-to-day work? (1–5)</h3>
+    <div class="chart-wrap sm"><canvas id="q8"></canvas></div>
+    <div class="insight"><strong>55% rated 4–5</strong>. But 40% gave a neutral 3, hinting that content feels generic rather than wrong — role-specific tracks could shift this.</div>
+  </div>
+
+  <!-- Q9: Desired Areas -->
+  <div class="card">
+    <span class="q-num">Q9 · Desired Training Areas</span>
+    <h3>Which areas do you want more training in? <small style="font-weight:400;color:var(--sub)">(multi-select)</small></h3>
+    <div class="chart-wrap xl"><canvas id="q9"></canvas></div>
+    <div class="insight"><strong>AI Fluency &amp; Agentic Tools dominates</strong> with 75 votes (80% of respondents). Technical Skills and Leadership complete the top 3.</div>
+  </div>
+
+</div>
+
+<!-- LEARNING STYLE & GROWTH -->
+<div class="section-title" style="margin-top:16px">Learning Style &amp; Growth Impact</div>
+<div class="grid three">
+
+  <!-- Q10: AI Fluency -->
+  <div class="card">
+    <span class="q-num">Q10 · AI Comfort Level</span>
+    <h3>Current comfort / fluency with AI tools</h3>
+    <div class="chart-wrap md"><canvas id="q10"></canvas></div>
+    <div class="insight"><strong>47% Intermediate, 37% Proficient/Expert</strong>. Strong foundation — AI training should skip basics and focus on agentic &amp; applied use cases.</div>
+  </div>
+
+  <!-- Q11: Preferred Format -->
+  <div class="card">
+    <span class="q-num">Q11 · Preferred Learning Format</span>
+    <h3>What is your preferred format for learning?</h3>
+    <div class="chart-wrap md"><canvas id="q11"></canvas></div>
+    <div class="insight"><strong>Self-paced + In-person</strong> together dominate (62%). Only 10% prefer micro-learning — but demand for it correlates with time scarcity.</div>
+  </div>
+
+  <!-- Q12: L&D Impact -->
+  <div class="card">
+    <span class="q-num">Q12 · Perceived Impact</span>
+    <h3>L&D resources contributed to my performance &amp; growth</h3>
+    <div class="chart-wrap md"><canvas id="q12"></canvas></div>
+    <div class="insight"><strong>80% agree</strong> (Agree + Strongly Agree). Only 8% disagree — a strong signal of value, though neutral responses (34%) suggest room to make impact more visible.</div>
+  </div>
+
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     INSIGHTS SECTION
+     ════════════════════════════════════════════════════════ -->
+
+<div class="insights-header">
+  <h2>Survey Insights &amp; Recommendations</h2>
+  <p>What's working, what's not, and what to do next — drawn from 94 responses across the India region.</p>
+</div>
+
+<!-- Snapshot spotlights -->
+<div class="spotlight-grid" style="margin-top:20px;">
+  <div class="spotlight">
+    <div class="snum" style="color:#1b7340">80%</div>
+    <div class="slbl">say L&D contributed to their growth</div>
+    <div class="stag tag-good">✓ Working well</div>
+  </div>
+  <div class="spotlight">
+    <div class="snum" style="color:#b5182b">35%</div>
+    <div class="slbl">have no idea who their L&D POC is</div>
+    <div class="stag tag-warn">⚠ Needs fix</div>
+  </div>
+  <div class="spotlight">
+    <div class="snum" style="color:#003087">80%</div>
+    <div class="slbl">of respondents want AI / Agentic training</div>
+    <div class="stag tag-action">→ Top demand</div>
+  </div>
+  <div class="spotlight">
+    <div class="snum" style="color:#b5182b">39%</div>
+    <div class="slbl">did not participate in last 6 months</div>
+    <div class="stag tag-warn">⚠ Engagement gap</div>
+  </div>
+  <div class="spotlight">
+    <div class="snum" style="color:#1b7340">70%</div>
+    <div class="slbl">find internal platforms easy to navigate</div>
+    <div class="stag tag-good">✓ Working well</div>
+  </div>
+  <div class="spotlight">
+    <div class="snum" style="color:#92610a">#1 barrier</div>
+    <div class="slbl">is unawareness, not lack of time</div>
+    <div class="stag tag-action">→ Fix comms first</div>
+  </div>
+</div>
+
+<div class="section-title" style="margin-top:8px">What's Working Well</div>
+<div class="insights-grid">
+
+  <div class="insight-card green">
+    <div class="ic-header">
+      <div class="ic-icon">✅</div>
+      <div>
+        <div class="ic-title">Strength</div>
+        <h3>L&D is Making a Real Impact</h3>
+      </div>
+    </div>
+    <ul>
+      <li><span class="bullet">1</span><span><span class="stat-pill">80%</span> agree L&D directly contributed to their performance — only <span class="stat-pill">8%</span> disagree.</span></li>
+      <li><span class="bullet">2</span><span>Content quality lands well with those who engage — the problem is reach, not relevance.</span></li>
+      <li><span class="bullet">3</span><span>30+ respondents left unprompted kudos, praising Learning Day, internship programs, and the team by name.</span></li>
+    </ul>
+  </div>
+
+  <div class="insight-card green">
+    <div class="ic-header">
+      <div class="ic-icon">📢</div>
+      <div>
+        <div class="ic-title">Strength</div>
+        <h3>Slack &amp; Email Are Proven Channels</h3>
+      </div>
+    </div>
+    <ul>
+      <li><span class="bullet">1</span><span><span class="stat-pill">70%</span> use Slack as their #1 source for L&D info — the highest of any channel by a wide margin.</span></li>
+      <li><span class="bullet">2</span><span>Email newsletters are a solid secondary channel at <span class="stat-pill">45 mentions</span>.</span></li>
+      <li><span class="bullet">3</span><span>No need to build new channels — double down on what's already working.</span></li>
+    </ul>
+  </div>
+
+  <div class="insight-card green">
+    <div class="ic-header">
+      <div class="ic-icon">🖥️</div>
+      <div>
+        <div class="ic-title">Strength</div>
+        <h3>Platforms Are Accessible</h3>
+      </div>
+    </div>
+    <ul>
+      <li><span class="bullet">1</span><span><span class="stat-pill">70%</span> rated platform navigation 4–5 out of 5 — the UX is not the bottleneck.</span></li>
+      <li><span class="bullet">2</span><span>The issue is knowing <em>what</em> to take, not <em>how</em> to navigate.</span></li>
+      <li><span class="bullet">3</span><span>Aware employees convert to active learners at a high rate — discovery is the missing link.</span></li>
+    </ul>
+  </div>
+
+  <div class="insight-card green">
+    <div class="ic-header">
+      <div class="ic-icon">🤝</div>
+      <div>
+        <div class="ic-title">Strength</div>
+        <h3>Once Found, the Content Resonates</h3>
+      </div>
+    </div>
+    <ul>
+      <li><span class="bullet">1</span><span>Employees with high L&D awareness (Q1 rated 4–5) show high participation — the offering works when it's discovered.</span></li>
+      <li><span class="bullet">2</span><span>Participants gave largely positive relevance scores — the portfolio broadly aligns with engaged learner needs.</span></li>
+      <li><span class="bullet">3</span><span>Qualitative sentiment is warm and enthusiastic across the board.</span></li>
+    </ul>
+  </div>
+
+</div>
+
+<div class="divider"></div>
+<div class="section-title">What's Not Working</div>
+<div class="insights-grid">
+
+  <div class="insight-card red">
+    <div class="ic-header">
+      <div class="ic-icon">🔍</div>
+      <div>
+        <div class="ic-title">Critical Gap</div>
+        <h3>Awareness is the #1 Barrier — Not Time</h3>
+      </div>
+    </div>
+    <ul>
+      <li><span class="bullet">1</span><span><span class="stat-pill">35%</span> don't know their L&D POC; <span class="stat-pill">21%</span> rated awareness 1–2 — invisible to all current outreach.</span></li>
+      <li><span class="bullet">2</span><span>"Unaware of offerings" is the top non-participation reason (17 people), beating "lack of time" (15).</span></li>
+      <li><span class="bullet">3</span><span>7 respondents don't know where to find L&D info at all — an onboarding gap, not a comms one.</span></li>
+    </ul>
+  </div>
+
+  <div class="insight-card red">
+    <div class="ic-header">
+      <div class="ic-icon">🎯</div>
+      <div>
+        <div class="ic-title">Critical Gap</div>
+        <h3>Content Feels Generic, Not Role-Specific</h3>
+      </div>
+    </div>
+    <ul>
+      <li><span class="bullet">1</span><span><span class="stat-pill">40%</span> rated relevance a neutral 3 — not rejecting it, just can't connect it to their role.</span></li>
+      <li><span class="bullet">2</span><span>Engineers asked for business context; Finance flagged that morning sessions clash with their 2–11pm shift.</span></li>
+      <li><span class="bullet">3</span><span>A targeting problem, not a content quality one — role-based paths would shift this fast.</span></li>
+    </ul>
+  </div>
+
+  <div class="insight-card red">
+    <div class="ic-header">
+      <div class="ic-icon">🤖</div>
+      <div>
+        <div class="ic-title">Urgent Gap</div>
+        <h3>AI Demand Far Outpaces Current Supply</h3>
+      </div>
+    </div>
+    <ul>
+      <li><span class="bullet">1</span><span><span class="stat-pill">80%</span> of respondents want AI &amp; Agentic training — the largest gap across all 18 categories.</span></li>
+      <li><span class="bullet">2</span><span>Specific asks: Agentic AI, Claude Code, MCP servers, RAG, prompt engineering, AI productivity.</span></li>
+      <li><span class="bullet">3</span><span><span class="stat-pill">84%</span> are already Intermediate+ — skip the basics, go deep and applied.</span></li>
+    </ul>
+  </div>
+
+  <div class="insight-card red">
+    <div class="ic-header">
+      <div class="ic-icon">⏰</div>
+      <div>
+        <div class="ic-title">Systemic Gap</div>
+        <h3>Learning Has No Protected Time or Structure</h3>
+      </div>
+    </div>
+    <ul>
+      <li><span class="bullet">1</span><span>Employees need <em>permission</em> to learn, not just access — "make AI training mandatory so we actually do it."</span></li>
+      <li><span class="bullet">2</span><span>Learning is self-initiated with no formal plan — outcomes are inconsistent as a result.</span></li>
+      <li><span class="bullet">3</span><span>Multiple respondents independently requested a recurring, no-meeting learning block.</span></li>
+    </ul>
+  </div>
+
+  <div class="insight-card red">
+    <div class="ic-header">
+      <div class="ic-icon">🗂️</div>
+      <div>
+        <div class="ic-title">Experience Gap</div>
+        <h3>Too Many Platforms, No Clear Map</h3>
+      </div>
+    </div>
+    <ul>
+      <li><span class="bullet">1</span><span>OktaU, Cornerstone, Udemy, LearnLUX — employees don't know what each is for or where to start.</span></li>
+      <li><span class="bullet">2</span><span>No unified session calendar exists; upcoming events are scattered across channels.</span></li>
+      <li><span class="bullet">3</span><span>Technical roles want O'Reilly, Pluralsight, or KodeKloud — cited independently by 5+ respondents.</span></li>
+    </ul>
+  </div>
+
+</div>
+
+<div class="divider"></div>
+<div class="section-title">Recommendations</div>
+<div class="insights-grid">
+
+  <div class="insight-card blue">
+    <div class="ic-header">
+      <div class="ic-icon">⚡</div>
+      <div>
+        <div class="ic-title">Quick Win · High Impact</div>
+        <h3>Run an "L&D Welcome" Awareness Campaign</h3>
+      </div>
+    </div>
+    <ul>
+      <li><span class="bullet">→</span><span>One Slack post mapping each team to their L&D POC — one day of effort, closes the 35% gap.</span></li>
+      <li><span class="bullet">→</span><span>Add an L&D orientation to new joiner onboarding; plugs the "I had no idea this existed" cluster.</span></li>
+      <li><span class="bullet">→</span><span>Monthly Slack digest with all upcoming sessions + one-click sign-up — requested by multiple respondents.</span></li>
+    </ul>
+  </div>
+
+  <div class="insight-card purple">
+    <div class="ic-header">
+      <div class="ic-icon">🤖</div>
+      <div>
+        <div class="ic-title">Strategic · Urgent</div>
+        <h3>Launch a Tiered AI Fluency Track</h3>
+      </div>
+    </div>
+    <ul>
+      <li><span class="bullet">→</span><span>Three tiers: <em>Applied AI</em> (intermediate), <em>Agentic AI &amp; tool-building</em> (advanced), <em>Responsible AI</em> (all). Skip the intro — 84% are already past it.</span></li>
+      <li><span class="bullet">→</span><span>Ground it in tools employees use: Claude, MCP servers, prompt engineering, RAG, AI productivity.</span></li>
+      <li><span class="bullet">→</span><span>Make one AI module mandatory per quarter — employees want the <em>permission</em>, not just the access.</span></li>
+    </ul>
+  </div>
+
+  <div class="insight-card teal">
+    <div class="ic-header">
+      <div class="ic-icon">🗺️</div>
+      <div>
+        <div class="ic-title">Strategic · Medium Term</div>
+        <h3>Build Role-Based Learning Paths</h3>
+      </div>
+    </div>
+    <ul>
+      <li><span class="bullet">→</span><span>4–5 persona journeys: Engineer, People Manager, Business Analyst, New Joiner, Senior IC.</span></li>
+      <li><span class="bullet">→</span><span>The 40% neutral relevance score is a targeting problem — role-based filtering lifts it without new content.</span></li>
+      <li><span class="bullet">→</span><span>Surface on The Landing and pin in role-specific Slack channels.</span></li>
+    </ul>
+  </div>
+
+  <div class="insight-card amber">
+    <div class="ic-header">
+      <div class="ic-icon">📅</div>
+      <div>
+        <div class="ic-title">Operational · Engagement</div>
+        <h3>Protect Learning Time</h3>
+      </div>
+    </div>
+    <ul>
+      <li><span class="bullet">→</span><span>Propose a monthly manager-endorsed no-meeting "Learning Hour" — even 60 min/month signals intent.</span></li>
+      <li><span class="bullet">→</span><span>Normalise 1 course/quarter as a soft expectation, with manager buy-in.</span></li>
+      <li><span class="bullet">→</span><span>Offer IST-friendly time slots — current morning-heavy schedule locks out Finance and late-shift teams.</span></li>
+    </ul>
+  </div>
+
+  <div class="insight-card blue">
+    <div class="ic-header">
+      <div class="ic-icon">🧩</div>
+      <div>
+        <div class="ic-title">Platform · Experience</div>
+        <h3>Clarify Platforms &amp; Expand Sources</h3>
+      </div>
+    </div>
+    <ul>
+      <li><span class="bullet">→</span><span>Publish a "which platform for what" one-pager: Cornerstone = compliance, Udemy = skills, OktaU = Okta-specific, LearnLUX = financial. Pin it everywhere.</span></li>
+      <li><span class="bullet">→</span><span>Add O'Reilly and one lab-based platform (Pluralsight / KodeKloud) — cited by 5+ respondents independently.</span></li>
+      <li><span class="bullet">→</span><span>Build a unified session calendar (Notion or Slack canvas) for a single view of all upcoming events.</span></li>
+    </ul>
+  </div>
+
+  <div class="insight-card teal">
+    <div class="ic-header">
+      <div class="ic-icon">🏆</div>
+      <div>
+        <div class="ic-title">Culture · Long-Term</div>
+        <h3>Make Learning Visible &amp; Rewarded</h3>
+      </div>
+    </div>
+    <ul>
+      <li><span class="bullet">→</span><span>Add lightweight recognition — Slack shout-outs or badges for course completions. Social proof compounds.</span></li>
+      <li><span class="bullet">→</span><span>Introduce a certification reimbursement policy (AWS, K8s, Okta certs) — flagged as a key motivator that's currently absent.</span></li>
+      <li><span class="bullet">→</span><span>Showcase L&D wins at town halls — several employees said they didn't know what the team does until this survey.</span></li>
+    </ul>
+  </div>
+
+</div>
+
+<div class="divider"></div>
+<div class="section-title">What Employees Are Actually Saying</div>
+<div class="insights-grid" style="grid-template-columns: repeat(auto-fill, minmax(420px,1fr))">
+
+  <div class="insight-card green" style="border-top-color:#52b788">
+    <div class="ic-header">
+      <div class="ic-icon">💬</div>
+      <div>
+        <div class="ic-title">Kudos from Respondents</div>
+        <h3>Voices of Appreciation</h3>
+      </div>
+    </div>
+    <ul>
+      <li><span class="bullet">❝</span><span style="font-style:italic">"Big kudos — so many unnoticed efforts to help others upskill without getting anything in return."</span></li>
+      <li><span class="bullet">❝</span><span style="font-style:italic">"Shout out to Prachi and Akrati for always ensuring our learning didn't stop during the internship!"</span></li>
+      <li><span class="bullet">❝</span><span style="font-style:italic">"The Learning Day event was great — helpful session, useful swags. Kudos for organising it."</span></li>
+      <li><span class="bullet">❝</span><span style="font-style:italic">"I appreciate the variety of resources and the effort to keep content relevant."</span></li>
+    </ul>
+  </div>
+
+  <div class="insight-card amber">
+    <div class="ic-header">
+      <div class="ic-icon">💡</div>
+      <div>
+        <div class="ic-title">Ideas from Respondents</div>
+        <h3>Suggestions Worth Acting On</h3>
+      </div>
+    </div>
+    <ul>
+      <li><span class="bullet">→</span><span><strong>Mentorship portal</strong> — mentors register hours, employees book sessions.</span></li>
+      <li><span class="bullet">→</span><span><strong>Medium.com membership</strong> alongside Udemy for article-based learning.</span></li>
+      <li><span class="bullet">→</span><span><strong>Kahoot-style L&D awareness</strong> — "more engagement than a Slack message."</span></li>
+      <li><span class="bullet">→</span><span><strong>Monthly session calendar</strong> on Slack with one-click sign-up.</span></li>
+    </ul>
+  </div>
+
+</div>
+
+<footer>
+  Okta L&D Survey · India Region · May 2026 · 94 responses · Visualised for internal use
+</footer>
+
+<script>
+Chart.defaults.font.family = "'Segoe UI', system-ui, sans-serif";
+Chart.defaults.font.size = 12;
+Chart.defaults.plugins.legend.display = false;
+
+// ── Colour palettes ──────────────────────────────────────────
+const RATING5 = ['#b5182b','#e07a5f','#f4d35e','#52b788','#1b7340'];
+const AGREEMENT = {
+  'Strongly agree':    '#1b7340',
+  'Agree':             '#52b788',
+  'Neutral':           '#adb5bd',
+  'Disagree':          '#e07a5f',
+  'Strongly disagree': '#b5182b'
+};
+const POC_COLORS = ['#1b7340','#f4d35e','#b5182b'];
+const PART_COLORS = ['#52b788','#adb5bd'];
+const BARRIER_COLORS = ['#e07a5f','#f4d35e','#adb5bd','#d4a5a5','#d4a5a5','#d4a5a5'];
+const AI_COLORS = ['#3b0764','#7e22ce','#a855f7','#d8b4fe','#ede9fe'];
+const FORMAT_COLORS = ['#0052cc','#0073e6','#3a9edd','#85c1e9','#cce4f6'];
+const AREA_COLORS = [
+  '#003087','#0052cc','#0073e6','#2980b9','#3a9edd',
+  '#52b788','#1b7340','#6fba96','#95d5b2','#d8f3dc',
+  '#f4d35e','#f9c74f','#e07a5f','#b5182b','#c77dff',
+  '#9d4edd','#adb5bd','#6c757d'
+];
+const SOURCE_COLORS = ['#003087','#0052cc','#3a9edd','#52b788','#f4d35e','#e07a5f','#b5182b'];
+
+function hbar(id, labels, data, colors, xMax) {
+  return new Chart(document.getElementById(id), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{ data, backgroundColor: colors, borderRadius: 5, borderSkipped: false }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: {
+        callbacks: { label: ctx => ` ${ctx.parsed.x} responses` }
+      }},
+      scales: {
+        x: { max: xMax, grid: { color: '#f0f0f0' }, ticks: { color: '#888' } },
+        y: { grid: { display: false }, ticks: { color: '#333', font: { size: 11 } } }
+      }
+    }
+  });
+}
+
+function vbar(id, labels, data, colors) {
+  return new Chart(document.getElementById(id), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{ data, backgroundColor: colors, borderRadius: 6, borderSkipped: false }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: {
+        callbacks: { label: ctx => ` ${ctx.parsed.y} responses` }
+      }},
+      scales: {
+        x: { grid: { display: false }, ticks: { color: '#333' } },
+        y: { grid: { color: '#f0f0f0' }, ticks: { color: '#888' } }
+      }
+    }
+  });
+}
+
+function donut(id, labels, data, colors) {
+  return new Chart(document.getElementById(id), {
+    type: 'doughnut',
+    data: {
+      labels,
+      datasets: [{ data, backgroundColor: colors, borderWidth: 2, borderColor: '#fff', hoverOffset: 6 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      cutout: '58%',
+      plugins: {
+        legend: { display: true, position: 'right',
+          labels: { boxWidth: 12, font: { size: 11 }, color: '#333', padding: 10 }
+        },
+        tooltip: {
+          callbacks: {
+            label: ctx => {
+              const total = ctx.dataset.data.reduce((a,b)=>a+b,0);
+              const pct = ((ctx.parsed/total)*100).toFixed(1);
+              return ` ${ctx.label}: ${ctx.parsed} (${pct}%)`;
+            }
+          }
+        }
+      }
+    }
+  });
+}
+
+// ── Q1: Awareness (1-5) ──
+vbar('q1',
+  ['1 – Unaware','2','3','4','5 – Very Aware'],
+  [7,13,20,23,31],
+  RATING5
+);
+
+// ── Q2: POC ──
+donut('q2',
+  ['Yes, know exactly','Know team, not person','Not sure who POC is'],
+  [37,24,33],
+  ['#1b7340','#f4d35e','#b5182b']
+);
+
+// ── Q3: Info sources ──
+hbar('q3',
+  ['Slack / #okta-learning','Cornerstone / Udemy','The Landing','Email / Newsletters','Direct Manager / Team Lead',"Don't know where to look"],
+  [66,55,50,45,20,7],
+  SOURCE_COLORS,
+  75
+);
+
+// ── Q4: Comms rating ──
+vbar('q4',
+  ['1','2','3','4','5'],
+  [2,18,22,27,25],
+  RATING5
+);
+
+// ── Q5: Platform navigation ──
+vbar('q5',
+  ['1','2','3','4','5'],
+  [1,6,21,37,29],
+  RATING5
+);
+
+// ── Q6: Participation ──
+donut('q6',
+  ['Yes – Participated','No – Did not'],
+  [57,37],
+  ['#52b788','#e07a5f']
+);
+
+// ── Q7: Barriers ──
+hbar('q7',
+  ['Unaware of offerings','Lack of time / workload','New joiner / recently joined','Topics not relevant','No slot for India','No formal plan','Slips out of mind'],
+  [17,15,5,3,1,1,1],
+  BARRIER_COLORS.concat(['#d4a5a5','#d4a5a5']),
+  20
+);
+
+// ── Q8: Relevance ──
+vbar('q8',
+  ['1','2','3','4','5'],
+  [2,2,38,23,29],
+  RATING5
+);
+
+// ── Q9: Desired areas ──
+hbar('q9',
+  [
+    'AI Fluency & Agentic Tools',
+    'Technical / Engineering Skills',
+    'Leadership & People Management',
+    'Design Thinking & Problem Solving',
+    'Growth Mindset & Continuous Learning',
+    'Conflict Resolution',
+    'Building Career Identity',
+    'Presentation Skills',
+    'Coaching / Mentoring',
+    'Business Communication',
+    'Stakeholder Management',
+    'Art of Feedback',
+    'Emotional Intelligence (EQ)',
+    'Psychological Safety & Team Trust',
+    'Change Management',
+    'Adaptability & Resilience',
+    'Diversity, Inclusion & Belonging',
+    'Security Engineering Concepts'
+  ],
+  [75,61,51,41,41,34,32,29,26,21,21,20,18,16,11,9,8,1],
+  AREA_COLORS,
+  85
+);
+
+// ── Q10: AI Fluency ──
+donut('q10',
+  ['Intermediate','Proficient','Beginner','Expert','No experience yet'],
+  [44,35,9,5,1],
+  ['#9333ea','#6b21a8','#d8b4fe','#3b0764','#f3e8ff']
+);
+
+// ── Q11: Preferred format ──
+donut('q11',
+  ['Self-paced online (Udemy etc.)','In-person classroom','Live instructor-led virtual','Micro-learning (short videos)','Peer-to-peer / Coaching'],
+  [33,25,21,9,6],
+  FORMAT_COLORS
+);
+
+// ── Q12: L&D Impact ──
+const agreeLabels = ['Strongly Agree','Agree','Neutral','Disagree','Strongly Disagree'];
+const agreeData   = [11,43,32,3,5];
+const agreeColors = agreeLabels.map(l => AGREEMENT[l] || AGREEMENT[l.replace(' ','_')] ||
+  ({'Strongly Agree':'#1b7340','Agree':'#52b788','Neutral':'#adb5bd','Disagree':'#e07a5f','Strongly Disagree':'#b5182b'}[l]));
+donut('q12', agreeLabels, agreeData, agreeColors);
+</script>
+</body>
+</html>
