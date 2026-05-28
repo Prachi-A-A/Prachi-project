@@ -1,0 +1,25 @@
+{
+  "name": "scramble-game",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "init-db": "node scripts/init-db.mjs"
+  },
+  "dependencies": {
+    "next": "^15.0.3",
+    "next-auth": "5.0.0-beta.25",
+    "@auth/core": "^0.37.4",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "@vercel/postgres": "^0.10.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.9.0",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "typescript": "^5.6.3"
+  }
+}
